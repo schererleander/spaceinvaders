@@ -7,7 +7,7 @@ class Szene():
   def beiEingabe(self, events: list):
     pass
 
-  def beiUpdate(self):
+  def beiUpdate(self, dt: float):
     pass
   
   def beiZeichne(self):
@@ -35,13 +35,16 @@ class Menue(Szene):
     if keys[pygame.K_SPACE]:
       self._wechselSzene = True
 
+  def beiUpdate(self, dt: float):
+    pass
+
   def beiZeichne(self):
     # Der Hintergrund wird auf den Screen gezeichnet
     self.__screen.blit(self.__background, (0,0))
 
-    self.__dieGUI.zeichneText('Space Invaders', 20, self.__screen.get_width()/2, self.__screen.get_height()*0.20, (255,255,255))
-    self.__dieGUI.zeichneText('Um das Spiel zu starten druecke:', 16, self.__screen.get_width()/2, self.__screen.get_height()*0.40, (255,255,255))
-    self.__dieGUI.zeichneRoundedButton('Space', 15,self.__screen.get_width()/2, self.__screen.get_height()*0.60, 120, 60, 10, (255,255,255), (0,0,0))
+    self.__dieGUI.zeichneText('Space Invaders', 20, self.__screen.get_width()//2, int(self.__screen.get_height()*0.20), (255,255,255))
+    self.__dieGUI.zeichneText('Um das Spiel zu starten druecke:', 16, self.__screen.get_width()//2, int(self.__screen.get_height()*0.40), (255,255,255))
+    self.__dieGUI.zeichneRoundedButton('Space', 15, self.__screen.get_width()//2, int(self.__screen.get_height()*0.60), 120, 60, 10, (255,255,255), (0,0,0))
     
     # Das Bild wird refreshed
     pygame.display.flip()
@@ -57,7 +60,6 @@ class Game(Szene):
   def __init__(self):
     super().__init__()
     self.__screen = pygame.display.set_mode((600,700))
-    self.__clock = pygame.time.Clock()
 
     self.__hintergrund = pygame.Surface((self.__screen.get_width(), self.__screen.get_height()))
     self.__hintergrund.fill((0,0,0))
@@ -78,7 +80,7 @@ class Game(Szene):
     self.__spielerTodSound = pygame.mixer.Sound('assets/sound/explosion.wav')
     self.__spielerTodSound.set_volume(self.__volume)
 
-    self.__derSpieler = Spieler((self.__screen.get_width()/2, self.__screen.get_height()*0.90))
+    self.__derSpieler = Spieler((int(self.__screen.get_width()/2), int(self.__screen.get_height()*0.90)))
 
     self.__dieGUI = GUI(self.__screen)
     self.__spielerSpriteGruppe = pygame.sprite.GroupSingle(self.__derSpieler)
@@ -97,7 +99,7 @@ class Game(Szene):
     'xx       xx',
     ]
 
-    self.__erstelleAlleBunker(anzahl=4,groeße=7,startX=50,startY=self.__screen.get_width()*0.85, xOffset=80)
+    self.__erstelleAlleBunker(anzahl=4,groeße=7,startX=50,startY=int(self.__screen.get_width()*0.85), xOffset=80)
     self.__erstelleAliens(zeilen=6,spalten=8,startX=50, startY=100,xDistanz=20,yDistanz=20)
 
   def __erstelleBunker(self, groeße: int, startX: int, startY: int):
@@ -128,13 +130,13 @@ class Game(Szene):
             dasAlien = Alien('assets/img/yellow.png', (x, y), 60)
           elif zeile == 1 or zeile == 2:
             dasAlien = Alien('assets/img/green.png', (x, y), 30)
-          elif zeile == 3 or zeile == 4 or zeile == 5:
+          else:
             dasAlien = Alien('assets/img/red.png', (x, y), 20)
           self.__alienSpriteGruppe.add(dasAlien)
   
-  def __bewegeAliens(self):
+  def __bewegeAliens(self, dt: float):
     for alien in self.__alienSpriteGruppe:
-      alien.bewegen()
+      alien.bewegen(dt)
       if alien.getRect().right >= self.__screen.get_width():
         for alien in self.__alienSpriteGruppe:
           alien.aendereRichtung()
@@ -151,7 +153,7 @@ class Game(Szene):
       randomAlien = alienListe[randrange(len(alienListe))]
       self.__zeitVonLetztenAlienSchuss = pygame.time.get_ticks()
       self.__shootSound.play()
-      self.__alienLaserSpriteGruppe.add(Laser((randomAlien.getRect().centerx, randomAlien.getRect().bottom), 2))
+      self.__alienLaserSpriteGruppe.add(Laser((randomAlien.getRect().centerx, randomAlien.getRect().bottom), 120.0))
 
   def __erstelleExtra(self):
     jetzt = pygame.time.get_ticks()
@@ -159,9 +161,9 @@ class Game(Szene):
       self.__extraSpriteGruppe.add(Extra(-10, 50))
       self.__zeitvonLetztenExtra = jetzt
   
-  def __bewegeExtra(self):
+  def __bewegeExtra(self, dt: float):
     for extra in self.__extraSpriteGruppe:
-      extra.bewegen()
+      extra.bewegen(dt)
       extra.einschraenken(self.__screen.get_width())
 
   def __kollision(self):
@@ -215,33 +217,31 @@ class Game(Szene):
   def getScore(self):
     return self.__score
 
-  def beiUpdate(self):
-    
+  def beiUpdate(self, dt: float):
+
     if self.__derSpieler.schuss():
-      self.__spielerLaserSpriteGruppe.add(Laser(self.__derSpieler.getLaserPostion(), -10))
+      self.__spielerLaserSpriteGruppe.add(Laser(self.__derSpieler.getLaserPostion(), -600.0))
       self.__shootSound.play()
     
-    self.__derSpieler.bewegen()
+    self.__derSpieler.bewegen(dt)
     self.__derSpieler.einschraenken(screenLaenge=self.__screen.get_width())
 
     self.__alienSchuss()
-    self.__bewegeAliens()
+    self.__bewegeAliens(dt)
 
     for laser in self.__alienLaserSpriteGruppe:
-      laser.bewegen()
+      laser.bewegen(dt)
     for laser in self.__spielerLaserSpriteGruppe:
-      laser.bewegen()
+      laser.bewegen(dt)
     
     self.__kollision()
     self.__alienUebrig = len(self.__alienSpriteGruppe)
 
     self.__erstelleExtra()
-    self.__bewegeExtra()
+    self.__bewegeExtra(dt)
 
     if self.__alienUebrig <= 0:
       self.__erstelleAliens(zeilen=6,spalten=8,startX=50, startY=100,xDistanz=20,yDistanz=20)
-
-    self.__clock.tick(60)
   
   def beiZeichne(self):
     self.__screen.blit(self.__hintergrund, (0,0))
@@ -256,15 +256,14 @@ class Game(Szene):
 
     self.__bunkerSpriteGruppe.draw(self.__screen)
 
-    self.__dieGUI.zeichneText(f'Score: {self.__score}', 12, 100, self.__screen.get_height()*0.05, (255,255,255))
-    self.__dieGUI.zeichneText(f'Leben: {self.__derSpieler.getLeben()}', 12, self.__screen.get_width()-100, self.__screen.get_height()*0.05, (255,255,255))
+    self.__dieGUI.zeichneText(f'Score: {self.__score}', 12, 100, int(self.__screen.get_height()*0.05), (255,255,255))
+    self.__dieGUI.zeichneText(f'Leben: {self.__derSpieler.getLeben()}', 12, self.__screen.get_width()-100, int(self.__screen.get_height()*0.05), (255,255,255))
     pygame.display.flip()
 
 class Benennung(Szene):
   def __init__(self, score: int):
     super().__init__()
     self.__screen = pygame.display.set_mode((600,800))
-    self.__clock = pygame.time.Clock()
     
     self.__hintergrund = pygame.Surface((self.__screen.get_width(), self.__screen.get_height()))
     self.__hintergrund.fill((0,0,0))
@@ -293,17 +292,15 @@ class Benennung(Szene):
         # Limitiere Spielername auf 3 Zeichen
         self.__spielerName += event.unicode
 
-  def beiUpdate(self):
+  def beiUpdate(self, dt: float):
     pass
 
   def beiZeichne(self):
     
     self.__screen.blit(self.__hintergrund, (0,0))
 
-    self.__dieGUI.zeichneText(f'Bitte geben sie ihren Name ein!', 12, self.__screen.get_width()/2, self.__screen.get_height()/2-50, (255,255,255))
-    self.__dieGUI.zeichneText(f'{self.__spielerName} : {self.__score}', 12, self.__screen.get_width()/2, self.__screen.get_height()/2, (255,255,255))
-
-    self.__clock.tick(999)
+    self.__dieGUI.zeichneText(f'Bitte geben sie ihren Name ein!', 12, self.__screen.get_width()//2, self.__screen.get_height()//2-50, (255,255,255))
+    self.__dieGUI.zeichneText(f'{self.__spielerName} : {self.__score}', 12, self.__screen.get_width()//2, self.__screen.get_height()//2, (255,255,255))
 
     pygame.display.flip()
 
@@ -314,7 +311,7 @@ class Score(Szene):
     self.__spielerListe = spielerListe
     self.__dieGUI = GUI(self.__screen)
 
-    self.__zeichneHighScoreListe(self.__screen.get_width()/2, 100, 50)
+    self.__zeichneHighScoreListe(self.__screen.get_width()//2, 100, 50)
 
     pygame.display.flip()
 
@@ -330,9 +327,12 @@ class Score(Szene):
       else:
         self.__dieGUI.zeichneText(f'{i+1}. ___ : ___', 12, x, y, (255,255,255))
     
-    self.__dieGUI.zeichneRoundedButton('Retry Press Space', 8, self.__screen.get_width()/2, self.__screen.get_height()-30, 180, 20, 5, (255,255,255), (0,0,0))
+    self.__dieGUI.zeichneRoundedButton('Retry Press Space', 8, self.__screen.get_width()//2, self.__screen.get_height()-30, 180, 20, 5, (255,255,255), (0,0,0))
   
   def beiEingabe(self, events: list):
     for event in events:
       if event.key == pygame.K_SPACE:
         self._wechselSzene = True
+
+  def beiUpdate(self, dt: float):
+    pass

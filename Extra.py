@@ -8,10 +8,13 @@ class Extra(pygame.sprite.Sprite):
     self.rect = self.image.get_rect()
     self.rect.center = (x,y)
 
-    self.__geschwindigkeit = 2
+    self.__pos_x = float(self.rect.x)
+    # pixels/second (old: 2 px/frame @ 60 FPS)
+    self.__geschwindigkeit = 120.0
   
-  def bewegen(self):
-    self.rect.x = self.rect.x + self.__geschwindigkeit
+  def bewegen(self, dt: float):
+    self.__pos_x += self.__geschwindigkeit * dt
+    self.rect.x = int(round(self.__pos_x))
   
   def einschraenken(self, screenLaenge):
     if self.rect.left >= screenLaenge:
