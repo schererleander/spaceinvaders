@@ -231,8 +231,10 @@ class Game(Szene):
 
     for laser in self.__alienLaserSpriteGruppe:
       laser.bewegen(dt)
+      laser.einschraenken(self.__screen.get_height())
     for laser in self.__spielerLaserSpriteGruppe:
       laser.bewegen(dt)
+      laser.einschraenken(self.__screen.get_height())
     
     self.__kollision()
     self.__alienUebrig = len(self.__alienSpriteGruppe)

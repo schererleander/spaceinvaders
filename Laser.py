@@ -17,3 +17,7 @@ class Laser(pygame.sprite.Sprite):
   def bewegen(self, dt: float):
     self.__pos_y += self.__geschwindigkeit * dt
     self.rect.y = int(round(self.__pos_y))
+
+  def einschraenken(self, screenHoehe: int):
+    if self.rect.bottom < 0 or self.rect.top > screenHoehe:
+      self.kill()
