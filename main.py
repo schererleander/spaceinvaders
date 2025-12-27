@@ -1,15 +1,26 @@
-import pygame
-
 import asyncio
+import platform
+import sys
 
 import pygame
 
 from Steuerung import Steuerung
 
 
-async def main():
+def running_in_browser() -> bool:
+    return sys.platform == "emscripten"
+
+
+def is_wasm_cpu() -> bool:
+    return "wasm" in platform.machine().lower()
+
+
+async def main() -> None:
     pygame.init()
-    steuerung = Steuerung(start_loop=False)
+    if running_in_browser():
+        pygame.display.init()
+
+    steuerung = Steuerung()
     await steuerung.loop()
     pygame.quit()
 
