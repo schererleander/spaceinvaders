@@ -1,5 +1,6 @@
 # Space Invaders
-![screenshot](screenshot.png)
+<img width="712" height="840" alt="spaceinvaders" src="https://github.com/user-attachments/assets/f184a056-0634-4e41-be76-d198e125100b" />
+
 A Pygame recreation of the classic Space Invaders game for a school project.
 
 ## Features
@@ -29,3 +30,4 @@ A Pygame recreation of the classic Space Invaders game for a school project.
 ## References
 Audio and image assets are sourced from:
 - [Space Invaders Assets](https://github.com/clear-code-projects/Space-invaders)
+clear-code-projects/Space-invaders)
